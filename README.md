@@ -4,8 +4,8 @@ This is a simple API service built with **Flask** that integrates with **MYSQL**
 ## Requirements
 To run this project, you'll need:
 - A docker environment
-- Best used with a reverse proxy to enable HTTPS 
-- If exposed to the public web, consider using Cloudflare and blocking based on country of origin
+
+This package is best to deploy using a reverse proxy to enable HTTPS.  If exposed to the public web, seriously consider using Cloudflare and blocking based on country of origin, and deploying on an AWS lightsail.  With AWS lightsail you can take regular snapshots of the data (e.g. backup), and if the backend is attacked then the only loses will be to the lightsail instance (as oppose to getting into you lab or home server).  
 
 ## Deployment with Docker Compose
 This container is designed to be deployed using Docker Compose. Below is an example configuration:
