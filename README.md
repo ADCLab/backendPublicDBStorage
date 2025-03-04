@@ -4,6 +4,8 @@ This is a simple API service built with **Flask** that integrates with **MYSQL**
 ## Requirements
 To run this project, you'll need:
 - A docker environment
+- Best used with a reverse proxy to enable HTTPS 
+- If exposed to the public web, consider using Cloudflare and blocking based on country of origin
 
 ## Deployment with Docker Compose
 This container is designed to be deployed using Docker Compose. Below is an example configuration:
@@ -21,6 +23,9 @@ services:
     volumes:
       - /bdata/docker/dots/mongodb:/data/db
       - /bdata/docker/dots/config:/data/configdb
+    restart: unless-stopped
+    # ports:
+    #  - "27017:27017"
 
   mysqldb:
     image: adclab/keydb:v0.3.0
@@ -28,8 +33,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: <mysql root password>
       MYSQL_API_KEY_MANAGER_PASSWORD: <mysql key manager password>
-    volumes:
-      - /bdata/docker/dots/mysqldb:/data/db
+    restart: unless-stopped
+    # volumes:
+    #  - /bdata/docker/dots/mysqldb:/data/db
+    # ports:
+    #  - "3306:3306"
 
   flask2mongo:
     image: adclab/flask2mongo:v0.4.0
@@ -39,6 +47,7 @@ services:
       - mysqldb
     ports:
       - "5000:5000"
+    restart: unless-stopped
     environment:
       MYSQL_HOST: mysqldb
       MYSQL_PORT: 3306
@@ -49,15 +58,21 @@ services:
       MY_MONGO_PORT: 27017
       MY_MONGO_USER: admin
       MY_MONGO_PASS: <mongodb root password>
-      MY_MONGO_DB: dots
-      MY_MONGO_COLLECTION: testing
-      MAX_FILE_SIZE: 1
-      API_KEY_EXPIRATION: 100
-      CORS_ORIGINS: "*"
+      MY_MONGO_DB:  <database name>
+      MY_MONGO_COLLECTION: <collection name>
+      MAX_FILE_SIZE: <INT in MB>
+      API_KEY_EXPIRATION: <time in seconds>
+      CORS_ORIGINS: www.example.com, www.mywebpage.com
       SAMPLE_SIZE: 1000
 ```
 
 Ensure that environment variables such as database passwords are securely set and not hardcoded.
+
+By default **MongoDB** and **MYSQL** are not publically accessible.  However, for testing purposes you can uncomment the port exposures for each service to access remotely.  **Make sure to hide ports when deploying to the public web!**   
+
+Because MongoDB is used to maintain data it should be written to a persistant volume.  Meanwhile, MYSQL is used to manage temporary API keys that get deleted from the database as part of a regularly occuring process, there is no need for the data to persist.
+
+CORS_ORIGINS is used to limit access to the API based on origin requests.  You can enter a list of urls or provide "*" (wildcard) to allow access from any source.  Usage of the wildcard option is dangerous and should only be used when testing or working within a restricted network.
 
 ## flask2mongo
 flask2mongo is a python flask deployment that serves as the front-end for aquireing temporary keys, pushing data to a mongoDB database, and retriving simple fields from the mongoDB database.  By default, the application will run on `http://localhost:5000`.  
