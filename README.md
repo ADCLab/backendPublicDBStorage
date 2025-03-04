@@ -74,31 +74,9 @@ Because MongoDB is used to maintain data it should be written to a persistant vo
 
 CORS_ORIGINS is used to limit access to the API based on origin requests.  You can enter a list of urls or provide "*" (wildcard) to allow access from any source.  Usage of the wildcard option is dangerous and should only be used when testing or working within a restricted network.
 
-## flask2mongo
-flask2mongo is a python flask deployment that serves as the front-end for aquireing temporary keys, pushing data to a mongoDB database, and retriving simple fields from the mongoDB database.  By default, the application will run on `http://localhost:5000`.  
+## API Endpoints
 
-### Environment Variables
-
-This application requires several environment variables to be set for configuration. These include:
-
-- `MYSQL_HOST`: The host address for the MySQL server (default is `localhost`).
-- `MYSQL_USER`: The username for the MySQL server (default is `root`).
-- `MYSQL_PASSWORD`: The password for the MySQL server.
-- `MYSQL_DB`: The name of the database to connect to (default is `api_tracking`).
-- `API_KEY_EXPIRATION`: The expiration time (in seconds) for API keys (default is 600 seconds).
-- `MY_MONGO_HOST`: The host address for the MongoDB server.
-- `MY_MONGO_PORT`: The port for the MongoDB server (default is `27017`).
-- `MY_MONGO_USER`: The username for the MongoDB server.
-- `MY_MONGO_PASS`: The password for the MongoDB server.
-- `MY_MONGO_DB`: The MongoDB database name.
-- `MY_MONGO_COLLECTION`: The MongoDB collection name.
-- `MAX_FILE_SIZE`: The maximum file size (in MB) allowed for uploads (default is 1 MB).
-- `CORS_ORIGINS`: A comma-separated list of allowed origins for CORS (default is `*`).
-- `SAMPLE_SIZE`: The number of random records to fetch when querying MongoDB (default is 1000).
-
-### API Endpoints
-
-#### 1. **Generate API Key**
+### 1. **Generate API Key**
 
 - **Endpoint**: `/getkey`
 - **Method**: `GET`
@@ -112,7 +90,7 @@ This application requires several environment variables to be set for configurat
 }
 ```
 
-#### 2. **Validate API Key**
+### 2. **Validate API Key**
 
 - **Endpoint**: `/validatekey/<api_key>`
 - **Method**: `GET`
@@ -135,7 +113,7 @@ If invalid or expired:
 }
 ```
 
-#### 3. **Insert Data into MongoDB**
+### 3. **Insert Data into MongoDB**
 
 - **Endpoint**: `/insert`
 - **Method**: `POST`
@@ -159,7 +137,7 @@ If the file is too large:
 }
 ```
 
-#### 4. **Query Values from MongoDB**
+### 4. **Query Values from MongoDB**
 
 - **Endpoint**: `/getvalues`
 - **Method**: `GET`
@@ -187,80 +165,5 @@ If the field is not found:
 
 
 ---
-
-# Docker Container
-
-## Overview
-This repository provides a Docker container setup, including a `Dockerfile` and initialization scripts, to streamline deployment. The container is configured to run custom startup scripts to ensure a smooth execution of necessary processes. It uses MySQL to manage API keys.
-
-## Files
-- **Dockerfile**: Defines the container environment and dependencies.
-- **run_at_start.sh**: Script executed at container startup.
-
-## Deployment with Docker Compose
-This container is designed to be deployed using Docker Compose. Below is an example configuration:
-
-```yaml
-version: '3.8'
-services:
-  mysqldb:
-    image: adclab/keydb:v0.3.0
-    container_name: dots_keydb
-    environment:
-      MYSQL_ROOT_PASSWORD: <root_password>
-      MYSQL_API_KEY_MANAGER_PASSWORD: <password>
-    volumes:
-      - /bdata/docker/dots/mysqldb:/data/db
-    #ports:
-    #  - "3307:3306"
-```
-
-Ensure that environment variables such as `MYSQL_ROOT_PASSWORD` and `MYSQL_API_KEY_MANAGER_PASSWORD` are securely set.
-
-## MySQL Configuration
-This container includes MySQL for managing API keys. Ensure that your MySQL environment variables are properly set up in the `Dockerfile` or provided via environment variables at runtime.
-
-To connect to the MySQL database inside the container:
-```sh
-docker exec -it my-container mysql -u root -p
-```
-
-Modify the database schema or insert API keys as needed using SQL queries.
-
-### MySQL Table Structure
-The `run_at_start.sh` script creates a MySQL database named `api_tracking` and a table called `api_keys`.
-
-#### **Table: `api_keys`**
-| Column      | Type         | Attributes                                   |
-|------------|-------------|----------------------------------------------|
-| `id`       | `INT`       | AUTO_INCREMENT, PRIMARY KEY                 |
-| `api_key`  | `VARCHAR(255)` | NOT NULL, UNIQUE                        |
-| `created_at` | `TIMESTAMP`  | DEFAULT CURRENT_TIMESTAMP                 |
-| `expires_at` | `TIMESTAMP`  | DEFAULT CURRENT_TIMESTAMP                 |
-
-Additionally, the script:
-- Creates a MySQL user (`api_key_manager`) with privileges to manage the `api_tracking` database.
-- Sets up an event that runs every minute to delete expired API keys (`expires_at < NOW()`).
-- Enables the MySQL event scheduler to ensure automated cleanup.
-
-## Customizing the Container
-Modify the scripts (`init.sh` and `run_at_start.sh`) to customize startup behavior as needed.
-
-## Stopping and Removing the Container
-To stop the container:
-```sh
-docker stop my-container
-```
-
-To remove the container:
-```sh
-docker rm my-container
-```
-
-## Logs
-To view container logs:
-```sh
-docker logs my-container
-```
 
 If you have any questions or need further assistance, feel free to open an issue or contact the maintainers.
