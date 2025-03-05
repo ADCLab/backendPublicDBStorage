@@ -46,15 +46,18 @@ services:
     #entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/init.sh"]
 
   flask2mongo:
-    image: adclab/flask2mongo:v0.4.0
-    container_name: dots_flask2mongo
+    image: adclab/flask2mongo:v0.4.2
+    container_name: online_experiments_flask2mongo
     restart: unless-stopped
     depends_on:
       - mongodb
-      - mysqldb
+      - mariadb
     ports:
       - "5000:5000"
     environment:
+      NUM_WORKERS: 1 # Optional defaults to 1
+      IP_ADDRESS: 0.0.0.0 # Optional defaults to 0.0.0.0
+      PORT: 5000 # Optional defaults to 5000
       MYSQL_HOST: mariadb
       MYSQL_PORT: 3306
       MYSQL_DATABASE: api_tracking
