@@ -1,5 +1,5 @@
 # backendPublicDBStorage
-This is a simple API service built with **Flask** that integrates with **MYSQL** for managing API keys and **MongoDB** for storing and querying data. The service allows users to generate and validate API keys, insert data into MongoDB, and query specific fields from the database.
+This is a simple API service built with **Flask** that integrates with **MariaDB** for managing API keys and **MongoDB** for storing and querying data. The service allows users to generate and validate API keys, insert data into MongoDB, and query specific fields from the database.
 
 ## Requirements
 To run this project, you'll need:
@@ -13,64 +13,72 @@ This container is designed to be deployed using Docker Compose. Below is an exam
 ```yaml
 version: '3.8'
 
+
 services:
   mongodb:
     image: mongo:8.0.5
     container_name: dots_mongodb
+    restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: <mongodb root password>
+      MONGO_INITDB_ROOT_PASSWORD: pMBCHSXYDkBao5
     volumes:
       - /bdata/docker/dots/mongodb:/data/db
       - /bdata/docker/dots/config:/data/configdb
-    restart: unless-stopped
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.25", "--storageEngine", "wiredTiger", "--bind_ip_all"]
+    mem_limit: 128m  # Limit MongoDB memory to 128MB
+    # Uncomment the lines below to enable restart and expose port if necessary
     # ports:
-    #  - "27017:27017"
+    #   - "27017:27017"
 
-  mysqldb:
-    image: adclab/keydb:v0.3.0
+  mariadb:
+    image: adclab/keydb:v0.4.1
     container_name: dots_keydb
-    environment:
-      MYSQL_ROOT_PASSWORD: <mysql root password>
-      MYSQL_API_KEY_MANAGER_PASSWORD: <mysql key manager password>
     restart: unless-stopped
-    # volumes:
-    #  - /bdata/docker/dots/mysqldb:/data/db
-    # ports:
-    #  - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: h42Pv1zUKglop4
+      MYSQL_API_KEY_MANAGER_PASSWORD: 8S6T1vzCBOh9gg
+    volumes:
+      - /bdata/docker/dots/mysqldb:/data/db
+    #ports:
+    #  - "3307:3306"
+    #entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/init.sh"]
 
   flask2mongo:
     image: adclab/flask2mongo:v0.4.0
     container_name: dots_flask2mongo
+    restart: unless-stopped
     depends_on:
       - mongodb
       - mysqldb
     ports:
       - "5000:5000"
-    restart: unless-stopped
     environment:
-      MYSQL_HOST: mysqldb
+      MYSQL_HOST: mariadb
       MYSQL_PORT: 3306
       MYSQL_DATABASE: api_tracking
       MYSQL_USER: api_key_manager
-      MYSQL_PASSWORD: <mysql key manager password>
+      MYSQL_PASSWORD: 8S6T1vzCBOh9gg
       MY_MONGO_HOST: mongodb
       MY_MONGO_PORT: 27017
       MY_MONGO_USER: admin
-      MY_MONGO_PASS: <mongodb root password>
-      MY_MONGO_DB:  <database name>
-      MY_MONGO_COLLECTION: <collection name>
-      MAX_FILE_SIZE: <INT in MB>
-      API_KEY_EXPIRATION: <time in seconds>
-      CORS_ORIGINS: www.example.com, www.mywebpage.com
+      MY_MONGO_PASS: pMBCHSXYDkBao5
+      MY_MONGO_DB: dots
+      MY_MONGO_COLLECTION: testing
+      MAX_FILE_SIZE: 1
+      API_KEY_EXPIRATION: 100
+      CORS_ORIGINS: "*"
       SAMPLE_SIZE: 1000
+      
+
 ```
+The set-up above is memory optimized.  If there are issues you may have to change run-time settings in MongoDB (e.g. wiredTigerCacheSizeGB) and recompile the MariaDB docker image.
 
 Ensure that environment variables such as database passwords are securely set and not hardcoded.
 
-By default **MongoDB** and **MYSQL** are not publically accessible.  However, for testing purposes you can uncomment the port exposures for each service to access remotely.  **Make sure to hide ports when deploying to the public web!**   
+By default **MongoDB** and **MariaDB** are not publically accessible.  However, for testing purposes you can uncomment the port exposures for each service to access remotely.  **Make sure to hide ports when deploying to the public web!**   
 
-Because MongoDB is used to maintain data it should be written to a persistant volume.  Meanwhile, MYSQL is used to manage temporary API keys that get deleted from the database as part of a regularly occuring process, there is no need for the data to persist.
+Because MongoDB is used to maintain data it should be written to a persistant volume.  Meanwhile, MariaDB is used to manage temporary API keys that get deleted from the database as part of a regularly occuring process, there is no need for the data to persist.
 
 CORS_ORIGINS is used to limit access to the API based on origin requests.  You can enter a list of urls or provide "*" (wildcard) to allow access from any source.  Usage of the wildcard option is dangerous and should only be used when testing or working within a restricted network.
 
