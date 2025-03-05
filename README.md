@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: pMBCHSXYDkBao5
+      MONGO_INITDB_ROOT_PASSWORD: <mongo root password>
     volumes:
       - /bdata/docker/dots/mongodb:/data/db
       - /bdata/docker/dots/config:/data/configdb
@@ -36,8 +36,8 @@ services:
     container_name: dots_keydb
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: h42Pv1zUKglop4
-      MYSQL_API_KEY_MANAGER_PASSWORD: 8S6T1vzCBOh9gg
+      MYSQL_ROOT_PASSWORD: <root password to database>
+      MYSQL_API_KEY_MANAGER_PASSWORD: <api_key_manager password to database>
     volumes:
       - /bdata/docker/dots/mysqldb:/data/db
     #ports:
@@ -58,11 +58,11 @@ services:
       MYSQL_PORT: 3306
       MYSQL_DATABASE: api_tracking
       MYSQL_USER: api_key_manager
-      MYSQL_PASSWORD: 8S6T1vzCBOh9gg
+      MYSQL_PASSWORD: <api_key_manager password to database>
       MY_MONGO_HOST: mongodb
       MY_MONGO_PORT: 27017
       MY_MONGO_USER: admin
-      MY_MONGO_PASS: pMBCHSXYDkBao5
+      MY_MONGO_PASS: <mongo root password>
       MY_MONGO_DB: dots
       MY_MONGO_COLLECTION: testing
       MAX_FILE_SIZE: 1
