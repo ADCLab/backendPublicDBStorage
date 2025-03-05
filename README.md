@@ -22,6 +22,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: <mongo root password>
+      MONGO_INITDB_DATABASE: <database name>
     volumes:
       - /bdata/docker/dots/mongodb:/data/db
       - /bdata/docker/dots/config:/data/configdb
@@ -63,10 +64,10 @@ services:
       MY_MONGO_PORT: 27017
       MY_MONGO_USER: admin
       MY_MONGO_PASS: <mongo root password>
-      MY_MONGO_DB: dots
-      MY_MONGO_COLLECTION: testing
+      MY_MONGO_DB: <database name>
+      MY_MONGO_COLLECTION: <collection name>
       MAX_FILE_SIZE: 1
-      API_KEY_EXPIRATION: 100
+      API_KEY_EXPIRATION: <time in seconds>
       CORS_ORIGINS: "*"
       SAMPLE_SIZE: 1000
       
