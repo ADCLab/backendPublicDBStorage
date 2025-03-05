@@ -52,6 +52,6 @@ chmod 644 /docker-entrypoint-initdb.d/init.sql
 
 echo "Created SQL initialization script with correct permissions"
 
-# Start the MySQL server
-echo "Starting MySQL server..."
-exec docker-entrypoint.sh mysqld
+# Start the MariaDB server
+echo "Starting MariaDB server..."
+exec docker-entrypoint.sh mariadbd

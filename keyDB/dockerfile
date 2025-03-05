@@ -1,15 +1,18 @@
-# Use the official mysql base image
-FROM mysql:latest
+# Use the lightweight MariaDB Alpine image
+FROM mariadb:latest
 
-# Set environment variable for API key expiration
-ENV API_KEY_EXPIRATION=600
+# Copy the memopry optimized my.cnf configuration file
+COPY my.cnf /etc/mysql/my.cnf
 
 # Copy the initialization script into the container
 COPY run_at_start.sh /run_at_start.sh
 RUN chmod +x /run_at_start.sh
-#COPY init.sh /docker-entrypoint-initdb.d/init.sh
-#RUN chmod +x /docker-entrypoint-initdb.d/init.sh
-#RUN chown -R mysql:mysql /docker-entrypoint-initdb.d/
 
-# No need to specify ENTRYPOINT and CMD again, as the image already has them
+# Expose MariaDB port
+EXPOSE 3306
+
+# Set environment variable for API key expiration.  Can be set at runtime.
+ENV API_KEY_EXPIRATION=600
+
+# Run script to dynamically generate init.sql with env variables
 ENTRYPOINT ["/run_at_start.sh"]
