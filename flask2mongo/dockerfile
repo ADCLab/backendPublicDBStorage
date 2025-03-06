@@ -7,11 +7,14 @@ WORKDIR /app
 # Copy the application files to the container
 COPY /app /app
 
+# Copy the startup script
+RUN chmod +x /app/run_at_start.sh
+
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port 5000 for the Flask web service
+# Expose the port (default: 5000)
 EXPOSE 5000
 
-# Use Gunicorn with multiple worker processes to handle parallel requests
-CMD ["gunicorn", "-w", "2", "-k", "gthread", "-b", "0.0.0.0:5000", "flask2mongo:app"]
+# Use the shell script to start the Gunicorn server with environment variables
+CMD ["/app/run_at_start.sh"]
